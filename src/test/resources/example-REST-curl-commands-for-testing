@@ -1,0 +1,17 @@
+--- Jersey tests
+curl -X PUT -H "Content-Type: application/json" -d @Order.json http://localhost:8081/rest-example/v1.0/jersey/ordermgmt/order
+curl -G http://localhost:8081/rest-example/v1.0/jersey/ordermgmt/order/1
+curl -X POST -H "Content-Type: application/json" -d @Order.json http://localhost:8081/rest-example/v1.0/jersey/ordermgmt/order/1
+curl -X DELETE http://localhost:8081/rest-example/v1.0/jersey/ordermgmt/order/1
+
+--- Jersey with ReponseTransformer tests
+curl -X PUT -H "Content-Type: application/json" -d @Order.json http://localhost:8081/rest-example/v1.0/jerseytransformer/ordermgmt/order
+curl -G http://localhost:8081/rest-example/v1.0/jerseytransformer/ordermgmt/order/1
+curl -X POST -H "Content-Type: application/json" -d @Order.json http://localhost:8081/rest-example/v1.0/jerseytransformer/ordermgmt/order/1
+curl -X DELETE http://localhost:8081/rest-example/v1.0/jerseytransformer/ordermgmt/order/1
+
+--- Mule REST router tests
+curl -X PUT http://localhost:8081/rest-example/v1.0/router/deason/comments/RestExample/feed
+curl -G http://localhost:8081/rest-example/v1.0/router/deason/comments/RestExample/feed
+curl -X POST http://localhost:8081/rest-example/v1.0/router/deason/comments/RestExample/feed
+curl -X DELETE http://localhost:8081/rest-example/v1.0/router/deason/comments/RestExample/feed

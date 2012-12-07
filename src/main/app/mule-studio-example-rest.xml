@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey"
+	xmlns:http="http://www.mulesoft.org/schema/mule/http"
+	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
+	xmlns:rest-router="http://www.mulesoft.org/schema/mule/rest-router"
+	xmlns="http://www.mulesoft.org/schema/mule/core" xmlns:doc="http://www.mulesoft.org/schema/mule/documentation" xmlns:spring="http://www.springframework.org/schema/beans" version="EE-3.3.1" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="
+http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
+http://www.mulesoft.org/schema/mule/http http://www.mulesoft.org/schema/mule/http/current/mule-http.xsd 
+http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/jersey/current/mule-jersey.xsd 
+http://www.mulesoft.org/schema/mule/rest-router http://www.mulesoft.org/schema/mule/rest-router/1.0/mule-rest-router.xsd 
+http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
+http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd 
+http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd ">
+	<http:connector name="HTTPConnector" cookieSpec="netscape" validateConnections="false" doc:name="HTTP\HTTPS"/>
+    <rest-router:config name="Rest_Router_config" doc:name="Rest Router"/>
+
+    <flow name="Jersey-REST-example" doc:name="Jersey-REST-example">
+        <http:inbound-endpoint exchange-pattern="request-response" host="${http.host}" port="${http.port}" path="${http.api.path}/jersey" connector-ref="HTTPConnector" doc:name="HTTP" doc:description="Process HTTP reqests or responses."/>
+        <logger message="REST request  = #[message.payload], HTTP verb=#[message.inboundProperties['http.method']]" level="INFO" doc:name="LOG Rest request"/>
+        <jersey:resources doc:name="REST (Implementation)">
+            <component class="org.ordermgmt.ProcessOrderImpl"/>
+        </jersey:resources>
+        <logger message="REST response  = #[message.payload]" level="INFO" doc:name="LOG Rest response"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="An exception has occurred while processing, message payload = #[message.payload]" level="ERROR" doc:name="Log Exception"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="Jersey-REST-ResponseTransformer-example" doc:name="Jersey-REST-ResponseTransformer-example">
+        <http:inbound-endpoint exchange-pattern="request-response" host="${http.host}" port="${http.port}" path="${http.api.path}/jerseytransformer" connector-ref="HTTPConnector" doc:name="HTTP" doc:description="Process HTTP reqests or responses."/>
+        <jersey:resources doc:name="REST (Implementation)">
+            <component class="org.ordermgmt.ProcessOrderImpl"/>
+        </jersey:resources>
+        <custom-transformer class="org.mule.ResponseTransformer" doc:name="Jersey Response Transformer"/>
+        <json:object-to-json-transformer doc:name="Object to JSON"/>
+        <logger message="REST response  = #[message.payload]" level="INFO" doc:name="LOG Rest response"/>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="An exception has occurred while processing, message payload = #[message.payload]" level="ERROR" doc:name="Log Exception"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="Mule-REST-Router-example" doc:name="Mule-REST-Router-example">
+        <http:inbound-endpoint exchange-pattern="request-response" host="${http.host}" port="${http.port}" path="${http.api.path}/router" connector-ref="HTTPConnector" doc:name="HTTP"/>
+		<logger message="REST request  = #[message.payload], HTTP verb=#[message.inboundProperties['http.method']]" level="INFO" doc:name="LOG Rest request"/>
+        <!-- do not include domain nor protocol, just the path -->
+        <rest-router:router templateUri="/rest-example/v1.0/router/{userid}/comments/{title}/feed" config-ref="Rest_Router_config" doc:name="Mule Rest Router">
+            <rest-router:get> 
+        		<set-payload value="Retrieving comment on #[flowVars['title']] for user #[flowVars['userid']]" doc:name="Set Payload"/>
+        		<logger message="REST response  = #[message.payload]" level="INFO" doc:name="Rest GET response"/>        		
+            </rest-router:get>
+            <rest-router:put> 
+        		<set-payload value="Creating comment on #[flowVars['title']] for user #[flowVars['userid']]" doc:name="Set Payload"/>
+        		<logger message="REST response  = #[message.payload]" level="INFO" doc:name="Rest PUT response"/>            
+            </rest-router:put>
+            <rest-router:post> 
+        		<set-payload value="Updating comment on #[flowVars['title']] for user #[flowVars['userid']]" doc:name="Set Payload"/>
+				<logger message="REST response  = #[message.payload]" level="INFO" doc:name="Rest POST response"/>
+            </rest-router:post>
+            <rest-router:delete> 
+        		<set-payload value="Deleting comment on #[flowVars['title']] for user #[flowVars['userid']]" doc:name="Set Payload"/>
+				<logger message="REST response  = #[message.payload]" level="INFO" doc:name="Rest DELETE response"/>                
+            </rest-router:delete>
+        </rest-router:router>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+            <logger message="An exception has occurred while processing, message payload = #[message.payload]" level="ERROR" doc:name="Log Exception"/>
+        </catch-exception-strategy>        
+    </flow>
+</mule>
