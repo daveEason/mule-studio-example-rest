@@ -16,7 +16,7 @@ public interface IProcessOrder {
 	 * @return Order
 	 */
 
-	Order retrieveOrder(String orderId);
+	OrderConfirmation retrieveOrder(String orderId);
 
 	/**
 	 * Create an order.
@@ -24,7 +24,7 @@ public interface IProcessOrder {
 	 * @return String orderId
 	 */
 
-	String createOrder(Order order);
+	OrderConfirmation createOrder(Order order);
 
 	/**
 	 * Update an order.
@@ -32,7 +32,7 @@ public interface IProcessOrder {
 	 * @param order
 	 * @return Order
 	 */
-	String updateOrder(String orderId, Order order);
+	OrderConfirmation updateOrder(String orderId, Order order);
 
 	/**
 	 * Delete an order.
@@ -40,5 +40,5 @@ public interface IProcessOrder {
 	 * @param orderId
 	 * @return String
 	 */
-	String deleteOrder(String orderId);
+	OrderConfirmation deleteOrder(String orderId);
 }

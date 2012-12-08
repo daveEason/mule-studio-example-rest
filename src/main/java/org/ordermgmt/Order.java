@@ -2,29 +2,23 @@ package org.ordermgmt;
 
 import java.util.List;
 
-import javax.xml.bind.annotation.XmlAccessType;
-import javax.xml.bind.annotation.XmlAccessorType;
-import javax.xml.bind.annotation.XmlElement;
-import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+
 
 /**
  * An order.
  * 
- * @author Derek
+ * @author david.eason@mulesoft.com
  */
-@XmlRootElement
-@XmlAccessorType(XmlAccessType.FIELD)
+@JsonAutoDetect
 public class Order {
 
-	@XmlElement(name = "orderId")
 	private String orderId;
 
 	/** Customer associated with order */
-	@XmlElement(name = "customer")
 	private OrderPerson customer;
 
 	/** List of items on an order */
-	@XmlElement(name = "item")
 	private List<OrderItem> items;
 
 	public String getOrderId() {

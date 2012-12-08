@@ -21,8 +21,9 @@ import javax.ws.rs.Produces;
 public class ProcessOrderImpl implements IProcessOrder {
 
 	public Order order;
+	public OrderConfirmation orderConfirmation = new OrderConfirmation();
 	public String response;
-	public Map<String,Order> map = new HashMap<String,Order>();
+	public static Map<String,Order> map = new HashMap<String,Order>();
 		
 	/*
 	 * (non-Javadoc)
@@ -33,11 +34,20 @@ public class ProcessOrderImpl implements IProcessOrder {
 	@GET
 	@Produces("application/json")
 	@Path("/order/{orderId}")
-	public Order retrieveOrder(@PathParam("orderId") String orderId) {
+	public OrderConfirmation retrieveOrder(@PathParam("orderId") String orderId) {
 		
-		order = map.get(orderId);
-
-		return order;
+		try{
+			
+			orderConfirmation.setOrder(ProcessOrderImpl.map.get(orderId));
+			orderConfirmation.setOrderId(orderId);
+			orderConfirmation.setStatus("Success");
+		
+		}catch(Exception e){
+			
+			orderConfirmation.setStatus("Failed - An exception was encountered while retrieving your order");
+		}
+		
+		return orderConfirmation;
 	}
 
 	/*
@@ -50,19 +60,21 @@ public class ProcessOrderImpl implements IProcessOrder {
 	@PUT
 	@Produces("application/json")
 	@Path("/order")
-	public String createOrder(Order order) {
+	public OrderConfirmation createOrder(Order order) {
 
 		try{
-			int i = map.size()+1;
+			int i = ProcessOrderImpl.map.size()+1;
 			String orderId = Integer.toString(i);
-			map.put(orderId, order);
-			response = orderId;
+			ProcessOrderImpl.map.put(orderId, order);
+			orderConfirmation.setOrder(ProcessOrderImpl.map.get(orderId));
+			orderConfirmation.setOrderId(orderId);
+			orderConfirmation.setStatus("Success");
 		}
 		catch(Exception e){
-			response = "An exception was caught while creating your order";
+			orderConfirmation.setStatus("An exception was caught while creating your order");
 		}
 		
-		return response;
+		return orderConfirmation;
 	}
 
 	/*
@@ -75,17 +87,19 @@ public class ProcessOrderImpl implements IProcessOrder {
 	@POST
 	@Produces("application/json")
 	@Path("/order/{orderId}")
-	public String updateOrder(@PathParam("orderId") String orderId, Order order) {
+	public OrderConfirmation updateOrder(@PathParam("orderId") String orderId, Order order) {
 		
 		try{
-			map.put(orderId, order);
-			response = orderId;
+			ProcessOrderImpl.map.put(orderId, order);
+			orderConfirmation.setOrder(ProcessOrderImpl.map.get(orderId));			
+			orderConfirmation.setOrderId(orderId);
+			orderConfirmation.setStatus("Success");
 		}
 		catch(Exception e){
-			response = "An exception was caught while updating your order";
+			orderConfirmation.setStatus("An exception was caught while updating your order");
 		}
 		
-		return response;
+		return orderConfirmation;
 	}
 
 	/*
@@ -98,16 +112,18 @@ public class ProcessOrderImpl implements IProcessOrder {
 	@DELETE
 	@Produces("application/json")
 	@Path("/order/{orderId}")
-	public String deleteOrder(@PathParam("orderId") String orderId) {
+	public OrderConfirmation deleteOrder(@PathParam("orderId") String orderId) {
 
 		try{
-			map.remove(orderId);
-			response = "Order Id number: " + orderId + " has been deleted";
+			ProcessOrderImpl.map.remove(orderId);
+			orderConfirmation.setOrder(ProcessOrderImpl.map.get(orderId));			
+			orderConfirmation.setOrderId(orderId);
+			orderConfirmation.setStatus("Success");
 		}
 		catch(Exception e){
-			response = "An exception was caught while deleting your order";
+			orderConfirmation.setStatus("An exception was caught while updating your order");
 		}
 		
-		return response;
+		return orderConfirmation;
 	}
 }

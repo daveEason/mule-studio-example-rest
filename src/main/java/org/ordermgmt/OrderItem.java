@@ -1,13 +1,13 @@
 package org.ordermgmt;
 
-import javax.xml.bind.annotation.XmlRootElement;
+import org.codehaus.jackson.annotate.JsonAutoDetect;
 
 /**
  * An item in an order.
  * 
  * @author Derek
  */
-@XmlRootElement
+@JsonAutoDetect
 public class OrderItem {
 
 	/** Item number */

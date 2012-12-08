@@ -1,10 +1,13 @@
 package org.ordermgmt;
 
+import org.codehaus.jackson.annotate.JsonAutoDetect;
+
 /**
  * Person associated with an order.
  * 
- * @author Derek
+ * @author david.eason@mulesoft.com
  */
+@JsonAutoDetect
 public class OrderPerson {
 
 	/** First name */
