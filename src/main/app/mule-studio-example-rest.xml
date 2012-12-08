@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
-<mule xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey"
+<mule xmlns:vm="http://www.mulesoft.org/schema/mule/vm"
+	xmlns:tracking="http://www.mulesoft.org/schema/mule/ee/tracking" xmlns:json="http://www.mulesoft.org/schema/mule/json" xmlns:jersey="http://www.mulesoft.org/schema/mule/jersey"
 	xmlns:http="http://www.mulesoft.org/schema/mule/http"
 	xmlns:scripting="http://www.mulesoft.org/schema/mule/scripting"
 	xmlns:rest-router="http://www.mulesoft.org/schema/mule/rest-router"
@@ -10,20 +11,53 @@ http://www.mulesoft.org/schema/mule/jersey http://www.mulesoft.org/schema/mule/j
 http://www.mulesoft.org/schema/mule/rest-router http://www.mulesoft.org/schema/mule/rest-router/1.0/mule-rest-router.xsd 
 http://www.springframework.org/schema/beans http://www.springframework.org/schema/beans/spring-beans-current.xsd 
 http://www.mulesoft.org/schema/mule/core http://www.mulesoft.org/schema/mule/core/current/mule.xsd 
+http://www.mulesoft.org/schema/mule/vm http://www.mulesoft.org/schema/mule/vm/current/mule-vm.xsd 
 http://www.mulesoft.org/schema/mule/ee/tracking http://www.mulesoft.org/schema/mule/ee/tracking/current/mule-tracking-ee.xsd 
 http://www.mulesoft.org/schema/mule/json http://www.mulesoft.org/schema/mule/json/current/mule-json.xsd 
 http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mule/scripting/current/mule-scripting.xsd ">
 	<http:connector name="HTTPConnector" cookieSpec="netscape" validateConnections="false" doc:name="HTTP\HTTPS"/>
     <rest-router:config name="Rest_Router_config" doc:name="Rest Router"/>
 
-    <flow name="Jersey-REST-ResponseTransformer-example" doc:name="Jersey-REST-ResponseTransformer-example">
+    <flow name="Basic-Http-REST" doc:name="Basic-Http-REST">
+        <http:inbound-endpoint exchange-pattern="request-response" host="${http.host}" port="${http.port}" path="${http.api.path}/basic" connector-ref="HTTPConnector" doc:name="HTTP"/>
+        <set-variable variableName="contentType" value="#[message.inboundProperties['Content-Type']]" doc:name="Set Content-Type"/>
+        <choice doc:name="Choice">
+            <when expression="#[message.inboundProperties['http.method']=='GET']">
+                <processor-chain>
+					<logger message="Http GET received" level="INFO" doc:name="GET"/>
+					<set-payload value="Http GET received" doc:name="Set Payload"/>
+                </processor-chain>
+            </when>
+            <when expression="#[message.inboundProperties['http.method']=='POST']">
+                <processor-chain>
+					<logger message="Http POST received" level="INFO" doc:name="POST"/>
+					<set-payload value="Http POST received" doc:name="Set Payload"/>
+                </processor-chain>
+            </when>
+            <otherwise>
+            	<processor-chain>
+                	<logger message="#[message.inboundProperties['http.method']] operation not supported" level="WARN" doc:name="No Such Operation"/>
+        			<set-payload value="Operation #[message.inboundProperties['http.method']] not supported" doc:name="Set Payload"/>
+        			<http:response-builder status="501" doc:name="Status code = 501"/>
+            	</processor-chain>
+            </otherwise>
+        </choice>
+        <catch-exception-strategy doc:name="Catch Exception Strategy">
+	        <logger message="An exception has been caught #[payload]" level="ERROR" doc:name="Exception Thrown"/>
+            <set-payload value="Error detected #[payload]" doc:name="Prepare response for client"/>
+            <http:response-builder status="500" doc:name="Status code = 500" doc:description="Sending a 500 Http Status code as Response"/>
+        </catch-exception-strategy>
+    </flow>
+    <flow name="Jersey-REST-example" doc:name="Jersey-REST-example">
         <http:inbound-endpoint exchange-pattern="request-response" host="${http.host}" port="${http.port}" path="${http.api.path}/jersey" connector-ref="HTTPConnector" doc:name="HTTP" doc:description="Process HTTP reqests or responses."/>
         <jersey:resources doc:name="Jersey (Implementation)">
             <component class="org.ordermgmt.ProcessOrderImpl"/>
         </jersey:resources>
         <logger message="REST response  = #[message.payload]" level="INFO" doc:name="LOG Rest response"/>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <logger message="An exception has occurred while processing, message payload = #[message.payload]" level="ERROR" doc:name="Log Exception"/>
+	        <logger message="An exception has been caught #[payload]" level="ERROR" doc:name="Exception Thrown"/>
+            <set-payload value="Error detected #[payload]" doc:name="Prepare response for client"/>
+            <http:response-builder status="500" doc:name="Status code = 500" doc:description="Sending a 500 Http Status code as Response"/>
         </catch-exception-strategy>
     </flow>
     <flow name="Mule-REST-Router-example" doc:name="Mule-REST-Router-example">
@@ -49,7 +83,9 @@ http://www.mulesoft.org/schema/mule/scripting http://www.mulesoft.org/schema/mul
             </rest-router:delete>
         </rest-router:router>
         <catch-exception-strategy doc:name="Catch Exception Strategy">
-            <logger message="An exception has occurred while processing, message payload = #[message.payload]" level="ERROR" doc:name="Log Exception"/>
+	        <logger message="An exception has been caught #[payload]" level="ERROR" doc:name="Exception Thrown"/>
+            <set-payload value="Error detected #[payload]" doc:name="Prepare response for client"/>
+            <http:response-builder status="500" doc:name="Status code = 500" doc:description="Sending a 500 Http Status code as Response"/>
         </catch-exception-strategy>        
     </flow>
 </mule>
